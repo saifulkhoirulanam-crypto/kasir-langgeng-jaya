@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0f766e">
+<title>Kasir Langgeng Jaya</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f3f4f6;color:#111827}
+header{position:sticky;top:0;z-index:20;background:#0f766e;color:#fff;padding:14px 15px;box-shadow:0 2px 8px #0002}
+header h1{font-size:18px;margin:0 0 3px}header small{opacity:.9}
+.tabs{display:flex;background:#fff;position:sticky;top:68px;z-index:19;border-bottom:1px solid #ddd;overflow:auto}
+.tab{min-width:82px;flex:1;padding:11px 3px;border:0;background:#fff;font-weight:700;color:#6b7280;font-size:12px}
+.tab.active{color:#0f766e;border-bottom:3px solid #0f766e}
+.page{display:none;padding:13px 13px 90px}.page.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.card{background:#fff;border-radius:13px;padding:12px;box-shadow:0 1px 5px #00000010}
+.menu-card{min-height:132px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid #e5e7eb}
+.menu-name{font-weight:700;font-size:14px}.price{color:#0f766e;font-weight:700;margin-top:5px}.stock{font-size:11px;color:#6b7280;margin-top:4px}
+button{cursor:pointer;border:0;border-radius:9px;padding:9px 11px;font-weight:700}.add{background:#0f766e;color:white;width:100%;margin-top:8px}
+.outline{background:#fff;border:1px solid #d1d5db;color:#374151}.danger{background:#fee2e2;color:#b91c1c}
+.section-title{font-size:16px;font-weight:700;margin:5px 0 10px}
+.cart{margin-top:13px}.cart-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #eee}.qty button{padding:5px 8px;margin:0 2px}.qty span{display:inline-block;min-width:23px;text-align:center}
+.total{font-size:19px;font-weight:800;display:flex;justify-content:space-between;padding:13px 0}.paybox label{font-size:12px;color:#6b7280;display:block;margin:7px 0 4px}
+input,select{width:100%;padding:11px;border:1px solid #d1d5db;border-radius:9px;font-size:15px;background:#fff}
+.bigbtn{width:100%;padding:13px;background:#f59e0b;color:#111827;font-size:15px}.empty{text-align:center;color:#9ca3af;padding:23px}
+.summary{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.stat b{font-size:19px;display:block;margin-top:4px}
+.tx{margin-top:9px}.tx-row{padding:11px 0;border-bottom:1px solid #eee}.tx-top{display:flex;justify-content:space-between;font-weight:700}.muted{color:#6b7280;font-size:11px}.note{font-size:11px;color:#6b7280;line-height:1.4;margin-top:7px}
+.admin-row{display:grid;grid-template-columns:1.4fr .8fr .8fr auto;gap:6px;margin-bottom:7px;align-items:center}.admin-row input{min-width:0}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}.pill{display:inline-block;padding:4px 7px;border-radius:20px;background:#ecfdf5;color:#047857;font-size:10px;font-weight:700}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:flex-end;z-index:50}.modal.show{display:flex}.sheet{background:#fff;width:100%;border-radius:19px 19px 0 0;padding:17px;max-height:92vh;overflow:auto}
+.receipt{font-family:monospace;background:#fafafa;padding:13px;border:1px dashed #aaa;white-space:pre-wrap;font-size:12px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
+.badge-low{color:#b45309;font-weight:700}.badge-out{color:#b91c1c;font-weight:700}.profit{color:#047857;font-weight:800}
+@media(max-width:420px){.admin-row{grid-template-columns:1.3fr .7fr .7fr auto}.admin-row button{padding:8px 7px;font-size:11px}}
+@media print{body *{visibility:hidden}.receipt,.receipt *{visibility:visible}.receipt{position:absolute;left:0;top:0;width:100%;border:0}}
+</style>
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Kasir Langgeng Jaya">
+</head>
+<body>
+<header><h1>🍽️ Warung Langgeng Jaya</h1><small>Tempe Penyet Cakto • Kasir & Laporan</small></header>
+<div class="tabs">
+<button class="tab active" onclick="showPage('kasir',this)">🛒 Kasir</button>
+<button class="tab" onclick="showPage('laporan',this)">📊 Laporan</button>
+<button class="tab" onclick="showPage('stok',this)">📦 Stok</button>
+<button class="tab" onclick="showPage('menu',this)">⚙️ Menu</button>
+<button class="tab" onclick="showPage('data',this)">💾 Data</button>
+</div>
+
+<section id="kasir" class="page active">
+<div class="row2">
+<div><label class="muted">Nomor meja / order</label><input id="orderNo" placeholder="Contoh: Meja 3"></div>
+<div><label class="muted">Nama pelanggan (opsional)</label><input id="customer" placeholder="Nama"></div>
+</div>
+<div class="section-title" style="margin-top:13px">Daftar Menu</div>
+<div id="menuGrid" class="grid"></div>
+<div class="cart card">
+<div class="section-title">Keranjang</div><div id="cartList"></div>
+<div class="row2">
+<div><label class="muted">Diskon (Rp)</label><input id="discount" type="number" inputmode="numeric" value="0" oninput="renderCart()"></div>
+<div><label class="muted">Metode bayar</label><select id="method"><option>Tunai</option><option>QRIS</option><option>Transfer</option></select></div>
+</div>
+<div class="total"><span>Total</span><span id="total">Rp0</span></div>
+<div class="paybox"><label>Uang pembayaran</label><input id="paid" type="number" inputmode="numeric" placeholder="Contoh: 50000" oninput="calcChange()">
+<div class="total" style="font-size:16px"><span>Kembalian</span><span id="change">Rp0</span></div>
+<button class="bigbtn" onclick="checkout()">💵 BAYAR & SIMPAN TRANSAKSI</button></div>
+</div>
+</section>
+
+<section id="laporan" class="page">
+<div class="section-title">Ringkasan</div>
+<div class="filters"><input id="fromDate" type="date" onchange="renderReport()"><input id="toDate" type="date" onchange="renderReport()"></div>
+<div class="summary">
+<div class="card stat">Transaksi<b id="statTx">0</b></div><div class="card stat">Omzet<b id="statOmzet">Rp0</b></div>
+<div class="card stat">Modal<b id="statCost">Rp0</b></div><div class="card stat">Laba Kotor<b class="profit" id="statProfit">Rp0</b></div>
+</div>
+<div class="card" style="margin-top:10px"><div class="section-title">Menu Terlaris</div><div id="bestMenu"></div></div>
+<div class="section-title" style="margin-top:17px">Riwayat Transaksi</div>
+<div id="txList" class="card"></div>
+</section>
+
+<section id="stok" class="page">
+<div class="section-title">Stok Menu</div>
+<div class="card" style="margin-bottom:10px"><div class="note">Stok otomatis berkurang saat transaksi. Atur stok awal di halaman Menu.</div></div>
+<div id="stockList"></div>
+</section>
+
+<section id="menu" class="page">
+<div class="section-title">Tambah Menu</div>
+<div class="card">
+<div class="row2"><input id="newName" placeholder="Nama menu"><input id="newPrice" type="number" inputmode="numeric" placeholder="Harga jual"></div>
+<div class="row2" style="margin-top:7px"><input id="newCost" type="number" inputmode="numeric" placeholder="Modal/menu"><input id="newStock" type="number" inputmode="numeric" placeholder="Stok awal"></div>
+<button class="add" onclick="addMenu()">+ Tambah Menu</button>
+<div class="note">Modal dipakai untuk menghitung laba kotor. Stok adalah jumlah porsi/menu yang tersedia.</div>
+</div>
+<div class="section-title" style="margin-top:16px">Daftar Menu</div>
+<div id="adminList"></div>
+</section>
+
+<section id="data" class="page">
+<div class="section-title">Backup & Data</div>
+<div class="card">
+<button class="add" onclick="backupData()">⬇️ Backup Data</button>
+<p class="note">Backup menyimpan menu, stok, dan seluruh transaksi ke file JSON.</p>
+<button class="outline" style="width:100%;margin-top:8px" onclick="document.getElementById('restoreFile').click()">⬆️ Restore Data</button>
+<input id="restoreFile" type="file" accept=".json" style="display:none" onchange="restoreData(event)">
+<button class="danger" style="width:100%;margin-top:18px" onclick="resetAll()">⚠️ Reset Semua Data</button>
+</div>
+<div class="card" style="margin-top:10px">
+<div class="section-title">Data Saat Ini</div>
+<div class="muted" id="dataInfo"></div>
+</div>
+</section>
+
+<div id="receiptModal" class="modal"><div class="sheet">
+<div class="section-title">Transaksi Berhasil ✅</div><div id="receipt" class="receipt"></div>
+<button class="add" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+<button class="outline" style="width:100%;margin-top:8px" onclick="closeModal()">Tutup</button>
+</div></div>
+
+<script>
+const seed=[
+{name:"Nasi Putih",price:5000,cost:2500,stock:50},{name:"Tempe Penyet",price:8000,cost:4000,stock:50},
+{name:"Tahu Penyet",price:7000,cost:3500,stock:50},{name:"Ayam Goreng",price:12000,cost:7500,stock:30},
+{name:"Lele Goreng",price:10000,cost:6000,stock:30},{name:"Telur",price:5000,cost:3000,stock:30},
+{name:"Es Teh",price:4000,cost:1500,stock:50},{name:"Teh Hangat",price:3000,cost:1000,stock:50},{name:"Kopi",price:5000,cost:2000,stock:30}
+];
+let menus=JSON.parse(localStorage.getItem('lj2_menus')||'null')||seed;
+let cart=[],tx=JSON.parse(localStorage.getItem('lj2_tx')||'[]');
+
+function rupiah(n){return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Math.max(0,n))}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function save(){localStorage.setItem('lj2_menus',JSON.stringify(menus));localStorage.setItem('lj2_tx',JSON.stringify(tx));}
+function showPage(id,btn){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active');if(id==='laporan')renderReport();if(id==='stok')renderStock();if(id==='menu')renderAdmin();if(id==='data')renderData()}
+function renderMenus(){
+document.getElementById('menuGrid').innerHTML=menus.map((m,i)=>`<div class="card menu-card"><div><div class="menu-name">${esc(m.name)}</div><div class="price">${rupiah(m.price)}</div><div class="stock">${m.stock<=0?'<span class="badge-out">Stok habis</span>':'Stok: '+m.stock}</div></div><button class="add" ${m.stock<=0?'disabled style="opacity:.4"':''} onclick="addCart(${i})">+ Tambah</button></div>`).join('');
+}
+function addCart(i){let x=cart.find(a=>a.i===i);if(menus[i].stock<=0)return alert('Stok '+menus[i].name+' habis.');if(x){if(x.q>=menus[i].stock)return alert('Stok tidak cukup.');x.q++}else cart.push({i,q:1});renderCart()}
+function getSubtotal(){return cart.reduce((s,x)=>s+menus[x.i].price*x.q,0)}
+function getDiscount(){return Math.min(Number(document.getElementById('discount').value)||0,getSubtotal())}
+function getTotal(){return getSubtotal()-getDiscount()}
+function renderCart(){
+let el=document.getElementById('cartList');if(!cart.length){el.innerHTML='<div class="empty">Keranjang masih kosong</div>'}else el.innerHTML=cart.map((x,k)=>{let m=menus[x.i];return `<div class="cart-row"><div><b>${esc(m.name)}</b><div class="muted">${rupiah(m.price)} × ${x.q}</div></div><div class="qty"><button class="outline" onclick="changeQty(${k},-1)">−</button><span>${x.q}</span><button class="outline" onclick="changeQty(${k},1)">+</button></div></div>`}).join('');
+document.getElementById('total').textContent=rupiah(getTotal());calcChange()}
+function changeQty(k,d){let x=cart[k];if(d>0&&x.q>=menus[x.i].stock)return alert('Stok tidak cukup.');x.q+=d;if(x.q<=0)cart.splice(k,1);renderCart()}
+function calcChange(){let p=Number(document.getElementById('paid').value)||0;document.getElementById('change').textContent=rupiah(Math.max(0,p-getTotal()))}
+function checkout(){
+if(!cart.length)return alert('Keranjang masih kosong.');let total=getTotal(),paid=Number(document.getElementById('paid').value)||0;if(paid<total)return alert('Uang pembayaran kurang '+rupiah(total-paid)+'.');
+let now=new Date(),id='TRX-'+now.getTime().toString().slice(-7),items=cart.map(x=>({name:menus[x.i].name,price:menus[x.i].price,cost:menus[x.i].cost,q:x.q}));
+items.forEach(x=>{let m=menus.find(m=>m.name===x.name);if(m)m.stock-=x.q});
+let cost=items.reduce((s,x)=>s+x.cost*x.q,0),discount=getDiscount();
+let rec={id,time:now.toISOString(),displayTime:now.toLocaleString('id-ID'),orderNo:document.getElementById('orderNo').value.trim(),customer:document.getElementById('customer').value.trim(),method:document.getElementById('method').value,items,total,discount,cost,profit:total-cost,paid,change:paid-total};
+tx.unshift(rec);save();
+document.getElementById('receipt').textContent=`WARUNG LANGGENG JAYA\nTEMPE PENYET CAKTO\n------------------------------\n${rec.orderNo?'Order: '+rec.orderNo+'\\n':''}${rec.customer?'Pelanggan: '+rec.customer+'\\n':''}${items.map(x=>(x.name.padEnd(20,' ').slice(0,20)+' x'+x.q+' '+rupiah(x.price*x.q))).join('\\n')}\n------------------------------\nSubtotal   : ${rupiah(total+discount)}\nDiskon     : ${rupiah(discount)}\nTOTAL      : ${rupiah(total)}\nBayar      : ${rupiah(paid)}\nKembalian  : ${rupiah(paid-total)}\nMetode     : ${rec.method}\n------------------------------\n${rec.displayTime}\nNo: ${id}\nTerima kasih 🙏`;
+cart=[];document.getElementById('paid').value='';document.getElementById('discount').value=0;document.getElementById('orderNo').value='';document.getElementById('customer').value='';document.getElementById('receiptModal').classList.add('show');renderAll();
+}
+function closeModal(){document.getElementById('receiptModal').classList.remove('show')}
+function inRange(t){let d=new Date(t),f=document.getElementById('fromDate').value,to=document.getElementById('toDate').value;if(f&&d<new Date(f+'T00:00:00'))return false;if(to&&d>new Date(to+'T23:59:59'))return false;return true}
+function renderReport(){
+let arr=tx.filter(t=>inRange(t.time)),omzet=arr.reduce((s,t)=>s+t.total,0),cost=arr.reduce((s,t)=>s+t.cost,0),profit=omzet-cost;
+document.getElementById('statTx').textContent=arr.length;document.getElementById('statOmzet').textContent=rupiah(omzet);document.getElementById('statCost').textContent=rupiah(cost);document.getElementById('statProfit').textContent=rupiah(profit);
+let counts={};arr.forEach(t=>t.items.forEach(x=>counts[x.name]=(counts[x.name]||0)+x.q));let best=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+document.getElementById('bestMenu').innerHTML=best.length?best.map((x,i)=>`<div style="padding:7px 0;border-bottom:1px solid #eee"><b>${i+1}. ${esc(x[0])}</b><span style="float:right">${x[1]} terjual</span></div>`).join(''):'<div class="empty">Belum ada data.</div>';
+document.getElementById('txList').innerHTML=arr.length?arr.map(t=>`<div class="tx-row"><div class="tx-top"><span>${t.id}</span><span>${rupiah(t.total)}</span></div><div class="muted">${t.displayTime} • ${t.method}${t.orderNo?' • '+esc(t.orderNo):''}</div><div class="muted">${t.items.map(x=>x.name+' × '+x.q).join(', ')}</div><div class="muted">Modal ${rupiah(t.cost)} • <span class="profit">Laba ${rupiah(t.profit)}</span></div></div>`).join(''):'<div class="empty">Belum ada transaksi pada periode ini.</div>';
+}
+function renderStock(){document.getElementById('stockList').innerHTML=menus.map(m=>`<div class="card" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center"><div><b>${esc(m.name)}</b><div class="muted">Harga ${rupiah(m.price)}</div></div><b class="${m.stock<=0?'badge-out':m.stock<=5?'badge-low':''}">${m.stock} porsi</b></div>`).join('')}
+function renderAdmin(){document.getElementById('adminList').innerHTML=menus.map((m,i)=>`<div class="card admin-row"><input value="${esc(m.name)}" onchange="editMenu(${i},'name',this.value)"><input type="number" value="${m.price}" onchange="editMenu(${i},'price',this.value)"><input type="number" value="${m.cost}" onchange="editMenu(${i},'cost',this.value)"><button class="danger" onclick="delMenu(${i})">Hapus</button><div style="grid-column:1/-1"><span class="muted">Stok:</span> <input style="width:90px" type="number" value="${m.stock}" onchange="editMenu(${i},'stock',this.value)"></div></div>`).join('')}
+function addMenu(){let n=document.getElementById('newName').value.trim(),p=Number(document.getElementById('newPrice').value),c=Number(document.getElementById('newCost').value)||0,s=Number(document.getElementById('newStock').value)||0;if(!n||!p)return alert('Nama dan harga wajib diisi.');menus.push({name:n,price:p,cost:c,stock:s});save();['newName','newPrice','newCost','newStock'].forEach(id=>document.getElementById(id).value='');renderAll()}
+function editMenu(i,k,v){menus[i][k]=k==='name'?v:(Number(v)||0);save();renderAll()}
+function delMenu(i){if(confirm('Hapus menu '+menus[i].name+'?')){menus.splice(i,1);save();renderAll()}}
+function backupData(){let blob=new Blob([JSON.stringify({menus,tx,version:2,exported:new Date().toISOString()},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='backup-kasir-langgeng-jaya-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function restoreData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);if(!d.menus||!d.tx)throw Error();menus=d.menus;tx=d.tx;save();renderAll();alert('Data berhasil dipulihkan.')}catch(_){alert('File backup tidak valid.')}};r.readAsText(f)}
+function resetAll(){if(confirm('Hapus SEMUA menu dan transaksi? Data tidak bisa dikembalikan kecuali Anda punya backup.')){localStorage.removeItem('lj2_menus');localStorage.removeItem('lj2_tx');menus=seed.map(x=>({...x}));tx=[];save();renderAll()}}
+function renderData(){document.getElementById('dataInfo').innerHTML=`${menus.length} menu<br>${tx.length} transaksi<br>Data tersimpan di perangkat/browser ini.`}
+function renderAll(){renderMenus();renderCart();renderReport();renderStock();renderAdmin();renderData()}
+(function initDates(){let d=new Date(),s=d.toISOString().slice(0,10);document.getElementById('fromDate').value=s;document.getElementById('toDate').value=s;renderAll()})();
+</script>
+<script>
+if ("serviceWorker" in navigator && location.protocol !== "file:") {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>

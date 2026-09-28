@@ -1,0 +1,10 @@
+{
+  "name": "Kasir Warung Langgeng Jaya",
+  "short_name": "Kasir Langgeng",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f3f4f6",
+  "theme_color": "#0f766e",
+  "description": "Aplikasi kasir Warung Langgeng Jaya Tempe Penyet Cakto",
+  "icons": []
+}
